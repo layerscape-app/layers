@@ -1,0 +1,60 @@
+{
+  "version": 8,
+  "name": "Bulletin core zone",
+  "metadata": { "layerscape:insertBefore": "labels" },
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "encoding": "terrarium",
+      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
+      "tileSize": 512,
+      "minzoom": 0,
+      "maxzoom": 15,
+      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
+    }
+  },
+  "layers": [
+    {
+      "id": "bulletin-core",
+      "type": "hillshade",
+      "source": "terrain",
+      "layout": { "visibility": "none" },
+      "metadata": {
+        "layerscape:label": "Bulletin core zone",
+        "layerscape:compute": [
+          "// The avalanche bulletin's dangerous aspects and elevations, on slopes from 30°:",
+          "// slope classes, faded out wherever the bulletin's wording doesn't apply.",
+          "vec2 g = gradient(10.0);",
+          "float s = slopeDeg(g);",
+          "float sector = facing(aspectDeg(g), u_centre, u_halfWidth);",
+          "float high = smoothstep(u_minElev - 50.0, u_minElev + 50.0, elev(vec2(0.0)));",
+          "value = s;",
+          "alpha = sector * high;"
+        ],
+        "layerscape:uniforms": [
+          { "name": "u_centre", "label": "Aspects centred on (°)", "type": "float", "value": 0, "min": 0, "max": 360, "step": 22.5 },
+          { "name": "u_halfWidth", "label": "± around it (°)", "type": "float", "value": 67.5, "min": 22.5, "max": 180, "step": 22.5 },
+          { "name": "u_minElev", "label": "Above (m)", "type": "float", "value": 2200, "min": 1000, "max": 4000, "step": 50 }
+        ],
+        "layerscape:presentation": {
+          "kind": "scale",
+          "scale": {
+            "scaleType": "threshold",
+            "title": "Slope angle",
+            "tickFormat": ".0f",
+            "unit": "°",
+            "domain": [30, 35, 40, 45, 50],
+            "range": [
+              [236, 224, 107],
+              [238, 144, 104],
+              [223, 107, 125],
+              [211, 167, 200],
+              [175, 175, 175]
+            ]
+          },
+          "footnote": "Only the set aspects, above the set elevation"
+        }
+      }
+    }
+  ]
+}

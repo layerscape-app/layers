@@ -1,0 +1,64 @@
+{
+  "version": 8,
+  "name": "Thermal triggers",
+  "metadata": { "layerscape:insertBefore": "labels" },
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "encoding": "terrarium",
+      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
+      "tileSize": 512,
+      "minzoom": 0,
+      "maxzoom": 15,
+      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
+    }
+  },
+  "layers": [
+    {
+      "id": "thermal-triggers",
+      "type": "hillshade",
+      "source": "terrain",
+      "minzoom": 7,
+      "layout": { "visibility": "none" },
+      "metadata": {
+        "layerscape:label": "Thermal triggers",
+        "layerscape:capabilities": { "terrain": { "radiusM": 5000, "resolutionM": 50 } },
+        "layerscape:dimensions": [
+          { "id": "date", "axis": "time", "label": "Date", "domain": { "preset": "calendarYear" }, "initial": { "preset": "today" }, "format": { "kind": "date" } },
+          { "id": "t", "axis": "time", "label": "Time of day", "domain": { "preset": "timeOfDay", "stepMinutes": 5 }, "initial": { "preset": "noon" }, "format": { "kind": "clock" } }
+        ],
+        "layerscape:compute": [
+          "// Where thermals are likely to release at the chosen time: slopes the sun strikes",
+          "// square-on, not in cast shadow, best on spurs and ridges standing above their",
+          "// surroundings.",
+          "vec3 n = normal(30.0);",
+          "float ar = radians(u_sunAzimuth);",
+          "float lr = radians(u_sunAltitude);",
+          "vec3 sun = vec3(cos(lr) * sin(ar), cos(lr) * cos(ar), sin(lr));",
+          "float heating = smoothstep(0.5, 0.95, dot(n, sun));",
+          "float lit = sunlit(u_sunAzimuth, u_sunAltitude);",
+          "float convex = smoothstep(0.0, 40.0, tpi(u_scaleM));",
+          "value = heating * lit * mix(0.3, 1.0, convex);",
+          "alpha = value;"
+        ],
+        "layerscape:uniforms": [
+          { "name": "u_sunAzimuth", "label": "Sun azimuth (°)", "type": "float", "value": 180, "derived": { "from": "sun.azimuthDeg", "args": { "date": "date", "timeOfDay": "t" } } },
+          { "name": "u_sunAltitude", "label": "Sun altitude (°)", "type": "float", "value": 45, "derived": { "from": "sun.altitudeDeg", "args": { "date": "date", "timeOfDay": "t" } } },
+          { "name": "u_scaleM", "label": "Spur scale (m)", "type": "float", "value": 300, "min": 100, "max": 1000, "step": 50 }
+        ],
+        "layerscape:presentation": {
+          "kind": "scale",
+          "scale": {
+            "scaleType": "continuous",
+            "title": "Thermal trigger",
+            "tickFormat": ".0%",
+            "domain": [0, 1],
+            "range": [[200, 30, 160, 0], [200, 30, 160, 0.85]],
+            "clamp": true
+          },
+          "footnote": "Terrain and sun only: no weather"
+        }
+      }
+    }
+  ]
+}

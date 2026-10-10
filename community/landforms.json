@@ -1,0 +1,67 @@
+{
+  "version": 8,
+  "name": "Landforms",
+  "metadata": { "layerscape:insertBefore": "labels" },
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "encoding": "terrarium",
+      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
+      "tileSize": 512,
+      "minzoom": 0,
+      "maxzoom": 15,
+      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
+    }
+  },
+  "layers": [
+    {
+      "id": "landforms",
+      "type": "hillshade",
+      "source": "terrain",
+      "minzoom": 7,
+      "layout": { "visibility": "none" },
+      "metadata": {
+        "layerscape:label": "Landforms",
+        "layerscape:capabilities": { "terrain": { "radiusM": 3000, "resolutionM": 50 } },
+        "layerscape:compute": [
+          "// Topographic position (Weiss) at two scales: how far each spot stands above or",
+          "// below its surroundings within a small and a large radius. A difference counts",
+          "// once it passes u_share of the radius (10% of 300 m is 30 m).",
+          "float local = tpi(u_smallM) / (u_share * u_smallM);",
+          "float broad = tpi(u_largeM) / (u_share * u_largeM);",
+          "float cls = 4.0;                          // open slope",
+          "if (local <= -1.0) cls = 1.0;             // gully, drainage",
+          "else if (broad <= -1.0) cls = 2.0;        // valley floor",
+          "else if (broad >= 1.0) cls = 6.0;         // ridge, summit",
+          "else if (local >= 1.0) cls = 5.0;         // spur, knoll",
+          "else if (slopeDeg(30.0) < 5.0) cls = 3.0; // flat",
+          "value = cls;"
+        ],
+        "layerscape:uniforms": [
+          { "name": "u_smallM", "label": "Small radius (m)", "type": "float", "value": 300, "min": 100, "max": 800, "step": 50 },
+          { "name": "u_largeM", "label": "Large radius (m)", "type": "float", "value": 1500, "min": 500, "max": 3000, "step": 100 },
+          { "name": "u_share", "label": "Counts from (share of radius)", "type": "float", "value": 0.1, "min": 0.03, "max": 0.3, "step": 0.01 }
+        ],
+        "layerscape:presentation": {
+          "kind": "scale",
+          "opacity": 0.5,
+          "scale": {
+            "scaleType": "threshold",
+            "title": "Landform",
+            "tickFormat": ".0f",
+            "domain": [1, 2, 3, 4, 5, 6],
+            "range": [
+              [0, 114, 178],
+              [86, 180, 233],
+              [0, 158, 115],
+              [240, 228, 66],
+              [230, 159, 0],
+              [213, 94, 0]
+            ]
+          },
+          "footnote": "1 gully · 2 valley floor · 3 flat · 4 open slope · 5 spur · 6 ridge or summit"
+        }
+      }
+    }
+  ]
+}

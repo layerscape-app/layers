@@ -1,0 +1,66 @@
+{
+  "version": 8,
+  "name": "Slope",
+  "metadata": {
+    "layerscape:insertBefore": "labels"
+  },
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "encoding": "terrarium",
+      "tiles": [
+        "https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"
+      ],
+      "tileSize": 512,
+      "minzoom": 0,
+      "maxzoom": 15,
+      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
+    }
+  },
+  "layers": [
+    {
+      "id": "slope",
+      "type": "hillshade",
+      "source": "terrain",
+      "layout": {
+        "visibility": "visible"
+      },
+      "metadata": {
+        "layerscape:label": "Slope",
+        "layerscape:author": "Layerscape",
+        "layerscape:compute": [
+          "// Horn's slope over a window of u_distance metres (see the guide's helper reference).",
+          "value = slopeDeg(u_distance);"
+        ],
+        "layerscape:uniforms": [
+          {
+            "name": "u_distance",
+            "label": "Slope distance (m)",
+            "type": "float",
+            "value": 10,
+            "min": 2,
+            "max": 50,
+            "step": 1
+          }
+        ],
+        "layerscape:presentation": {
+          "kind": "scale",
+          "scale": {
+            "scaleType": "threshold",
+            "title": "Slope angle",
+            "tickFormat": ".0f",
+            "unit": "°",
+            "domain": [30, 35, 40, 45, 50],
+            "range": [
+              [236, 224, 107],
+              [238, 144, 104],
+              [223, 107, 125],
+              [211, 167, 200],
+              [175, 175, 175]
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

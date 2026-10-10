@@ -1,0 +1,55 @@
+{
+  "version": 8,
+  "name": "North-facing steep slopes",
+  "metadata": { "layerscape:insertBefore": "labels" },
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "encoding": "terrarium",
+      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
+      "tileSize": 512,
+      "minzoom": 0,
+      "maxzoom": 15,
+      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
+    }
+  },
+  "layers": [
+    {
+      "id": "north-steep",
+      "type": "hillshade",
+      "source": "terrain",
+      "layout": { "visibility": "none" },
+      "metadata": {
+        "layerscape:label": "North steeps",
+        "layerscape:compute": [
+          "// One gradient, read twice: how steep, and which way the slope faces.",
+          "vec2 g = gradient(u_window);",
+          "value = slopeDeg(g);",
+          "alpha = facing(aspectDeg(g), 0.0, u_halfWidth);"
+        ],
+        "layerscape:uniforms": [
+          { "name": "u_window", "label": "Slope window (m)", "type": "float", "value": 10, "min": 2, "max": 50, "step": 1 },
+          { "name": "u_halfWidth", "label": "Within ± of north (°)", "type": "float", "value": 45, "min": 10, "max": 90, "step": 5 }
+        ],
+        "layerscape:presentation": {
+          "kind": "scale",
+          "scale": {
+            "scaleType": "threshold",
+            "title": "Slope angle",
+            "tickFormat": ".0f",
+            "unit": "°",
+            "domain": [30, 35, 40, 45, 50],
+            "range": [
+              [236, 224, 107],
+              [238, 144, 104],
+              [223, 107, 125],
+              [211, 167, 200],
+              [175, 175, 175]
+            ]
+          },
+          "footnote": "Only slopes facing within the set angle of north"
+        }
+      }
+    }
+  ]
+}

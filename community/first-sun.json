@@ -1,0 +1,61 @@
+{
+  "version": 8,
+  "name": "First sun",
+  "metadata": { "layerscape:insertBefore": "labels" },
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "encoding": "terrarium",
+      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
+      "tileSize": 512,
+      "minzoom": 0,
+      "maxzoom": 15,
+      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
+    }
+  },
+  "layers": [
+    {
+      "id": "first-sun",
+      "type": "hillshade",
+      "source": "terrain",
+      "minzoom": 7,
+      "layout": { "visibility": "none" },
+      "metadata": {
+        "layerscape:label": "First sun",
+        "layerscape:capabilities": {
+          "terrain": { "radiusM": 20000, "resolutionM": 100 },
+          "sun": { "date": "date" }
+        },
+        "layerscape:dimensions": [
+          { "id": "date", "axis": "time", "label": "Date", "domain": { "preset": "calendarYear" }, "initial": { "preset": "today" }, "format": { "kind": "date" } }
+        ],
+        "layerscape:compute": [
+          "// The clock hour direct sun first reaches each spot on the chosen date.",
+          "// lastSunH() gives the last sun, sunHours(6.0, 12.0) the hours of morning sun.",
+          "float h = firstSunH();",
+          "value = h;",
+          "alpha = h < 0.0 ? 0.0 : 1.0;"
+        ],
+        "layerscape:presentation": {
+          "kind": "scale",
+          "scale": {
+            "scaleType": "continuous",
+            "title": "First sun",
+            "tickFormat": ".0f",
+            "unit": " h",
+            "domain": [6, 8, 10, 12, 14],
+            "range": [
+              [255, 237, 160, 0.8],
+              [254, 196, 79, 0.75],
+              [120, 198, 121, 0.7],
+              [65, 182, 196, 0.75],
+              [34, 94, 168, 0.85]
+            ],
+            "clamp": true
+          },
+          "footnote": "Clock time on the chosen date"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "version": 8,
+  "name": "Shadows",
+  "metadata": {
+    "layerscape:insertBefore": "labels"
+  },
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "encoding": "terrarium",
+      "tiles": [
+        "https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"
+      ],
+      "tileSize": 512,
+      "minzoom": 0,
+      "maxzoom": 15,
+      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
+    }
+  },
+  "layers": [
+    {
+      "id": "shade",
+      "type": "hillshade",
+      "source": "terrain",
+      "layout": {
+        "visibility": "none"
+      },
+      "minzoom": 7,
+      "metadata": {
+        "layerscape:label": "Shadows",
+        "layerscape:author": "Layerscape",
+        "layerscape:compute": [
+          "// Shadow amount: the slope facing away from the sun, or terrain up to 50 km away",
+          "// standing between it and the sun (the terrain capability's radius).",
+          "value = 1.0 - sunlit(u_sunAzimuth, u_sunAltitude);"
+        ],
+        "layerscape:uniforms": [
+          {
+            "name": "u_sunAzimuth",
+            "label": "Sun azimuth (°)",
+            "type": "float",
+            "value": 180,
+            "derived": {
+              "from": "sun.azimuthDeg",
+              "args": {
+                "date": "date",
+                "timeOfDay": "t"
+              }
+            }
+          },
+          {
+            "name": "u_sunAltitude",
+            "label": "Sun altitude (°)",
+            "type": "float",
+            "value": 45,
+            "derived": {
+              "from": "sun.altitudeDeg",
+              "args": {
+                "date": "date",
+                "timeOfDay": "t"
+              }
+            }
+          }
+        ],
+        "layerscape:dimensions": [
+          {
+            "id": "date",
+            "axis": "time",
+            "label": "Date",
+            "domain": {
+              "preset": "calendarYear"
+            },
+            "initial": {
+              "preset": "today"
+            },
+            "format": {
+              "kind": "date"
+            }
+          },
+          {
+            "id": "t",
+            "axis": "time",
+            "label": "Time of day",
+            "domain": {
+              "preset": "timeOfDay",
+              "stepMinutes": 5
+            },
+            "initial": {
+              "preset": "noon"
+            },
+            "format": {
+              "kind": "clock"
+            }
+          }
+        ],
+        "layerscape:capabilities": {
+          "terrain": { "radiusM": 50000, "resolutionM": 150 }
+        },
+        "layerscape:presentation": {
+          "kind": "scale",
+          "opacity": 0.5,
+          "scale": {
+            "scaleType": "continuous",
+            "title": "Shadow",
+            "tickFormat": ".0%",
+            "domain": [0, 1],
+            "range": [
+              [40, 48, 66, 0],
+              [12, 16, 34, 0.9]
+            ],
+            "clamp": true
+          }
+        }
+      }
+    }
+  ]
+}

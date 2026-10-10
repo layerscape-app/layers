@@ -1,0 +1,55 @@
+{
+  "version": 8,
+  "name": "Avalanche runout",
+  "metadata": { "layerscape:insertBefore": "labels" },
+  "sources": {
+    "terrain": {
+      "type": "raster-dem",
+      "encoding": "terrarium",
+      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
+      "tileSize": 512,
+      "minzoom": 0,
+      "maxzoom": 15,
+      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
+    }
+  },
+  "layers": [
+    {
+      "id": "avalanche-runout",
+      "type": "hillshade",
+      "source": "terrain",
+      "minzoom": 7,
+      "layout": { "visibility": "none" },
+      "metadata": {
+        "layerscape:label": "Avalanche runout",
+        "layerscape:capabilities": { "terrain": { "radiusM": 3000, "resolutionM": 25 } },
+        "layerscape:compute": [
+          "// The alpha-angle rule (Lied & Bakkehøi): the steepest angle at which an avalanche",
+          "// from 30-60° ground uphill still runs out to each spot. Short runs reach the",
+          "// high angles; only long-running avalanches reach the low ones.",
+          "value = runoutAngle(u_searchM);"
+        ],
+        "layerscape:uniforms": [
+          { "name": "u_searchM", "label": "Search distance (m)", "type": "float", "value": 2000, "min": 500, "max": 3000, "step": 100 }
+        ],
+        "layerscape:presentation": {
+          "kind": "scale",
+          "scale": {
+            "scaleType": "threshold",
+            "title": "Reached at alpha angle",
+            "tickFormat": ".0f",
+            "unit": "°",
+            "domain": [18, 22, 26, 30],
+            "range": [
+              [200, 30, 160, 0.2],
+              [200, 30, 160, 0.4],
+              [200, 30, 160, 0.6],
+              [200, 30, 160, 0.8]
+            ]
+          },
+          "footnote": "Darker: reached by shorter avalanches. Terrain shape only: no snow, forest or release size."
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The catalog is static: build.mjs writes dist/, served from Cloudflare's edge as Workers
+  // static assets, the same way the app is. No Worker code. Connect this repo with Workers
+  // Builds so every push (the publish service's commits included) rebuilds and redeploys.
+  "name": "layerscape-layers",
+  "compatibility_date": "2026-10-01",
+  "build": { "command": "npm run build" },
+  "assets": { "directory": "./dist" },
+  "routes": [{ "pattern": "layers.layerscape.app", "custom_domain": true }]
+}
