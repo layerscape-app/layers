@@ -1,56 +1,34 @@
 {
-  "version": 8,
-  "name": "Potential release areas",
-  "metadata": { "layerscape:insertBefore": "labels" },
-  "sources": {
-    "terrain": {
-      "type": "raster-dem",
-      "encoding": "terrarium",
-      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
-      "tileSize": 512,
-      "minzoom": 0,
-      "maxzoom": 15,
-      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
-    }
-  },
-  "layers": [
-    {
-      "id": "release-areas",
-      "type": "hillshade",
-      "source": "terrain",
-      "minzoom": 7,
-      "layout": { "visibility": "none" },
-      "metadata": {
-        "layerscape:label": "Release areas",
-        "layerscape:capabilities": { "terrain": { "radiusM": 500, "resolutionM": 25 } },
-        "layerscape:compute": [
-          "// A score for where slab avalanches could start, after fuzzy-logic release-area",
-          "// models: steep enough, smooth (snow-covered rather than rocky), in the lee of the",
-          "// wind, and not on a sharp ridge. There is no forest data, so forest shows too.",
-          "float steep = inRange(slopeDeg(10.0), u_slopeMin, 60.0, 3.0);",
-          "float even = 1.0 - smoothstep(0.01, 0.06, vrm(30.0));",
-          "float lee = smoothstep(-5.0, 15.0, windShelter(u_windFrom, 300.0));",
-          "float notRidge = 1.0 - smoothstep(0.005, 0.02, planCurvature(30.0));",
-          "value = steep * even * mix(0.5, 1.0, lee) * notRidge;",
-          "alpha = value;"
-        ],
-        "layerscape:uniforms": [
-          { "name": "u_slopeMin", "label": "Steeper than (°)", "type": "float", "value": 28, "min": 25, "max": 40, "step": 1 },
-          { "name": "u_windFrom", "label": "Wind from (°)", "type": "float", "value": 315, "min": 0, "max": 360, "step": 5 }
-        ],
-        "layerscape:presentation": {
-          "kind": "scale",
-          "scale": {
-            "scaleType": "continuous",
-            "title": "Release likelihood",
-            "tickFormat": ".0%",
-            "domain": [0, 1],
-            "range": [[200, 30, 160, 0], [200, 30, 160, 0.85]],
-            "clamp": true
-          },
-          "footnote": "Terrain only: no snow, wind or forest data"
-        }
-      }
-    }
-  ]
+  "$schema": "https://layerscape.app/schema.json",
+  "version": 1,
+  "id": "release-areas",
+  "label": "Release areas",
+  "capabilities": { "terrain": { "radiusM": 500, "resolutionM": 25 } },
+  "compute": [
+    "// A score for where slab avalanches could start, after fuzzy-logic release-area",
+    "// models: steep enough, smooth (snow-covered rather than rocky), in the lee of the",
+    "// wind, and not on a sharp ridge. There is no forest data, so forest shows too.",
+    "float steep = inRange(slopeDeg(10.0), u_slopeMin, 60.0, 3.0);",
+    "float even = 1.0 - smoothstep(0.01, 0.06, vrm(30.0));",
+    "float lee = smoothstep(-5.0, 15.0, windShelter(u_windFrom, 300.0));",
+    "float notRidge = 1.0 - smoothstep(0.005, 0.02, planCurvature(30.0));",
+    "value = steep * even * mix(0.5, 1.0, lee) * notRidge;",
+    "alpha = value;"
+  ],
+  "uniforms": [
+    { "name": "u_slopeMin", "label": "Steeper than (°)", "type": "float", "value": 28, "min": 25, "max": 40, "step": 1 },
+    { "name": "u_windFrom", "label": "Wind from (°)", "type": "float", "value": 315, "min": 0, "max": 360, "step": 5 }
+  ],
+  "presentation": {
+    "kind": "scale",
+    "scale": {
+      "scaleType": "continuous",
+      "title": "Release likelihood",
+      "tickFormat": ".0%",
+      "domain": [0, 1],
+      "range": [[200, 30, 160, 0], [200, 30, 160, 0.85]],
+      "clamp": true
+    },
+    "footnote": "Terrain only: no snow, wind or forest data"
+  }
 }

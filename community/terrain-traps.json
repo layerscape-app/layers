@@ -1,55 +1,32 @@
 {
-  "version": 8,
-  "name": "Terrain traps",
-  "metadata": { "layerscape:insertBefore": "labels" },
-  "sources": {
-    "terrain": {
-      "type": "raster-dem",
-      "encoding": "terrarium",
-      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
-      "tileSize": 512,
-      "minzoom": 0,
-      "maxzoom": 15,
-      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
-    }
-  },
-  "layers": [
-    {
-      "id": "terrain-traps",
-      "type": "hillshade",
-      "source": "terrain",
-      "layout": { "visibility": "none" },
-      "metadata": {
-        "layerscape:label": "Terrain traps",
-        "layerscape:compute": [
-          "// Below steep ground: gullies (ground channelling inwards) and abrupt flattening,",
-          "// where an avalanche's debris piles up deep.",
-          "vec2 g = gradient(20.0);",
-          "float here = slopeDeg(g);",
-          "vec2 up = dot(g, g) > 1e-12 ? normalize(g) : vec2(0.0, 1.0);",
-          "float above = degrees(atan((elev(up * 60.0) - elev(up * 20.0)) / 40.0)); // 20-60 m upslope",
-          "float steepAbove = inRange(above, u_startMin, 60.0, 3.0);",
-          "float gully = smoothstep(0.005, 0.02, -planCurvature(30.0));",
-          "float flattening = smoothstep(5.0, 15.0, above - here);",
-          "value = max(gully, flattening) * steepAbove;",
-          "alpha = value;"
-        ],
-        "layerscape:uniforms": [
-          { "name": "u_startMin", "label": "Steep above from (°)", "type": "float", "value": 30, "min": 25, "max": 45, "step": 1 }
-        ],
-        "layerscape:presentation": {
-          "kind": "scale",
-          "scale": {
-            "scaleType": "continuous",
-            "title": "Terrain trap",
-            "tickFormat": ".0%",
-            "domain": [0, 1],
-            "range": [[200, 30, 160, 0], [200, 30, 160, 0.85]],
-            "clamp": true
-          },
-          "footnote": "Gullies and sudden flattening below steep slopes"
-        }
-      }
-    }
-  ]
+  "$schema": "https://layerscape.app/schema.json",
+  "version": 1,
+  "id": "terrain-traps",
+  "label": "Terrain traps",
+  "compute": [
+    "// Below steep ground: gullies (ground channelling inwards) and abrupt flattening,",
+    "// where an avalanche's debris piles up deep.",
+    "vec2 g = gradient(20.0);",
+    "float here = slopeDeg(g);",
+    "vec2 up = dot(g, g) > 1e-12 ? normalize(g) : vec2(0.0, 1.0);",
+    "float above = degrees(atan((elev(up * 60.0) - elev(up * 20.0)) / 40.0)); // 20-60 m upslope",
+    "float steepAbove = inRange(above, u_startMin, 60.0, 3.0);",
+    "float gully = smoothstep(0.005, 0.02, -planCurvature(30.0));",
+    "float flattening = smoothstep(5.0, 15.0, above - here);",
+    "value = max(gully, flattening) * steepAbove;",
+    "alpha = value;"
+  ],
+  "uniforms": [{ "name": "u_startMin", "label": "Steep above from (°)", "type": "float", "value": 30, "min": 25, "max": 45, "step": 1 }],
+  "presentation": {
+    "kind": "scale",
+    "scale": {
+      "scaleType": "continuous",
+      "title": "Terrain trap",
+      "tickFormat": ".0%",
+      "domain": [0, 1],
+      "range": [[200, 30, 160, 0], [200, 30, 160, 0.85]],
+      "clamp": true
+    },
+    "footnote": "Gullies and sudden flattening below steep slopes"
+  }
 }

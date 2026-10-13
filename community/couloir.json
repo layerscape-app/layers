@@ -1,61 +1,40 @@
 {
-  "version": 8,
-  "name": "Couloirs",
-  "metadata": { "layerscape:insertBefore": "labels" },
-  "sources": {
-    "terrain": {
-      "type": "raster-dem",
-      "encoding": "terrarium",
-      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
-      "tileSize": 512,
-      "minzoom": 0,
-      "maxzoom": 15,
-      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
-    }
-  },
-  "layers": [
-    {
-      "id": "couloir",
-      "type": "hillshade",
-      "source": "terrain",
-      "layout": { "visibility": "none" },
-      "metadata": {
-        "layerscape:label": "Couloirs",
-        "layerscape:compute": [
-          "// Steepness over the narrowest couloir width, and how strongly the ground",
-          "// channels inwards (negative plan curvature) at three widths across the range.",
-          "float slope = slopeDeg(u_widthMin);",
-          "float channel = 0.0;",
-          "for (int i = 0; i < 3; i++) {",
-          "  float w = mix(u_widthMin, u_widthMax, float(i) / 2.0);",
-          "  channel = max(channel, smoothstep(u_concavity, 4.0 * u_concavity, -planCurvature(w)));",
-          "}",
-          "float score = inRange(slope, u_slopeMin, u_slopeMax, 5.0) * channel;",
-          "value = slope;",
-          "tint = vec3(0.55 + 0.45 * channel);",
-          "alpha = score < 0.02 ? 0.0 : score;"
-        ],
-        "layerscape:uniforms": [
-          { "name": "u_slopeMin", "label": "Min slope (°)", "type": "float", "value": 30, "min": 20, "max": 45, "step": 1 },
-          { "name": "u_slopeMax", "label": "Max slope (°)", "type": "float", "value": 55, "min": 40, "max": 65, "step": 1 },
-          { "name": "u_widthMax", "label": "Max width (m)", "type": "float", "value": 30, "min": 10, "max": 60, "step": 1 },
-          { "name": "u_widthMin", "label": "Min width (m)", "type": "float", "value": 6 },
-          { "name": "u_concavity", "label": "Channel concavity (1/m)", "type": "float", "value": 0.01 }
-        ],
-        "layerscape:presentation": {
-          "kind": "scale",
-          "scale": {
-            "scaleType": "continuous",
-            "title": "Couloir steepness",
-            "tickFormat": ".0f",
-            "unit": "°",
-            "domain": [30, 42.5, 55],
-            "range": [[26, 217, 255], [255, 217, 51], [255, 46, 71]],
-            "clamp": true
-          },
-          "footnote": "Brighter = narrower chute"
-        }
-      }
-    }
-  ]
+  "$schema": "https://layerscape.app/schema.json",
+  "version": 1,
+  "id": "couloir",
+  "label": "Couloirs",
+  "compute": [
+    "// Steepness over the narrowest couloir width, and how strongly the ground",
+    "// channels inwards (negative plan curvature) at three widths across the range.",
+    "float slope = slopeDeg(u_widthMin);",
+    "float channel = 0.0;",
+    "for (int i = 0; i < 3; i++) {",
+    "  float w = mix(u_widthMin, u_widthMax, float(i) / 2.0);",
+    "  channel = max(channel, smoothstep(u_concavity, 4.0 * u_concavity, -planCurvature(w)));",
+    "}",
+    "float score = inRange(slope, u_slopeMin, u_slopeMax, 5.0) * channel;",
+    "value = slope;",
+    "tint = vec3(0.55 + 0.45 * channel);",
+    "alpha = score < 0.02 ? 0.0 : score;"
+  ],
+  "uniforms": [
+    { "name": "u_slopeMin", "label": "Min slope (°)", "type": "float", "value": 30, "min": 20, "max": 45, "step": 1 },
+    { "name": "u_slopeMax", "label": "Max slope (°)", "type": "float", "value": 55, "min": 40, "max": 65, "step": 1 },
+    { "name": "u_widthMax", "label": "Max width (m)", "type": "float", "value": 30, "min": 10, "max": 60, "step": 1 },
+    { "name": "u_widthMin", "label": "Min width (m)", "type": "float", "value": 6 },
+    { "name": "u_concavity", "label": "Channel concavity (1/m)", "type": "float", "value": 0.01 }
+  ],
+  "presentation": {
+    "kind": "scale",
+    "scale": {
+      "scaleType": "continuous",
+      "title": "Couloir steepness",
+      "tickFormat": ".0f",
+      "unit": "°",
+      "domain": [30, 42.5, 55],
+      "range": [[26, 217, 255], [255, 217, 51], [255, 46, 71]],
+      "clamp": true
+    },
+    "footnote": "Brighter = narrower chute"
+  }
 }

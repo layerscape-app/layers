@@ -1,57 +1,29 @@
 {
-  "version": 8,
-  "name": "Wind shelter",
-  "metadata": { "layerscape:insertBefore": "labels" },
-  "sources": {
-    "terrain": {
-      "type": "raster-dem",
-      "encoding": "terrarium",
-      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
-      "tileSize": 512,
-      "minzoom": 0,
-      "maxzoom": 15,
-      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
-    }
-  },
-  "layers": [
-    {
-      "id": "wind-shelter",
-      "type": "hillshade",
-      "source": "terrain",
-      "minzoom": 7,
-      "layout": { "visibility": "none" },
-      "metadata": {
-        "layerscape:label": "Wind shelter",
-        "layerscape:capabilities": { "terrain": { "radiusM": 1000, "resolutionM": 25 } },
-        "layerscape:compute": [
-          "// Winstral's Sx: how high the terrain upwind stands. Positive = lee, where wind",
-          "// deposits snow; negative = exposed to the wind.",
-          "value = windShelter(u_windFrom, u_searchM);"
-        ],
-        "layerscape:uniforms": [
-          { "name": "u_windFrom", "label": "Wind from (°)", "type": "float", "value": 315, "min": 0, "max": 360, "step": 5 },
-          { "name": "u_searchM", "label": "Search distance (m)", "type": "float", "value": 300, "min": 100, "max": 1000, "step": 10 }
-        ],
-        "layerscape:presentation": {
-          "kind": "scale",
-          "scale": {
-            "scaleType": "continuous",
-            "title": "Shelter angle",
-            "tickFormat": ".0f",
-            "unit": "°",
-            "domain": [-30, -10, 0, 10, 30],
-            "range": [
-              [33, 102, 172, 0.85],
-              [103, 169, 207, 0.45],
-              [247, 247, 247, 0],
-              [239, 138, 98, 0.45],
-              [178, 24, 43, 0.85]
-            ],
-            "clamp": true
-          },
-          "footnote": "Red: sheltered from the wind (lee). Blue: exposed to it."
-        }
-      }
-    }
-  ]
+  "$schema": "https://layerscape.app/schema.json",
+  "version": 1,
+  "id": "wind-shelter",
+  "label": "Wind shelter",
+  "capabilities": { "terrain": { "radiusM": 1000, "resolutionM": 25 } },
+  "compute": [
+    "// Winstral's Sx: how high the terrain upwind stands. Positive = lee, where wind",
+    "// deposits snow; negative = exposed to the wind.",
+    "value = windShelter(u_windFrom, u_searchM);"
+  ],
+  "uniforms": [
+    { "name": "u_windFrom", "label": "Wind from (°)", "type": "float", "value": 315, "min": 0, "max": 360, "step": 5 },
+    { "name": "u_searchM", "label": "Search distance (m)", "type": "float", "value": 300, "min": 100, "max": 1000, "step": 10 }
+  ],
+  "presentation": {
+    "kind": "scale",
+    "scale": {
+      "scaleType": "continuous",
+      "title": "Shelter angle",
+      "tickFormat": ".0f",
+      "unit": "°",
+      "domain": [-30, -10, 0, 10, 30],
+      "range": [[33, 102, 172, 0.85], [103, 169, 207, 0.45], [247, 247, 247, 0], [239, 138, 98, 0.45], [178, 24, 43, 0.85]],
+      "clamp": true
+    },
+    "footnote": "Red: sheltered from the wind (lee). Blue: exposed to it."
+  }
 }

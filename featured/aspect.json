@@ -1,77 +1,37 @@
 {
-  "version": 8,
-  "name": "Aspect",
-  "metadata": {
-    "layerscape:insertBefore": "labels"
-  },
-  "sources": {
-    "terrain": {
-      "type": "raster-dem",
-      "encoding": "terrarium",
-      "tiles": [
-        "https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"
-      ],
-      "tileSize": 512,
-      "minzoom": 0,
-      "maxzoom": 15,
-      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
+  "$schema": "https://layerscape.app/schema.json",
+  "version": 1,
+  "id": "aspect",
+  "label": "Aspect",
+  "author": "Layerscape",
+  "compute": [
+    "// One gradient, read twice: the direction the slope faces, and how steep it is so",
+    "// flat ground (where facing means nothing) fades out.",
+    "vec2 g = gradient(u_distance);",
+    "value = aspectDeg(g);",
+    "alpha = inRange(slopeDeg(g), u_minSlope, 90.0, 1.0);"
+  ],
+  "uniforms": [
+    { "name": "u_distance", "label": "Slope distance (m)", "type": "float", "value": 10, "min": 2, "max": 50, "step": 1 },
+    { "name": "u_minSlope", "label": "Flat-ground cutoff (°)", "type": "float", "value": 2 }
+  ],
+  "presentation": {
+    "kind": "scale",
+    "opacity": 0.5,
+    "scale": {
+      "scaleType": "continuous",
+      "title": "Aspect (facing)",
+      "display": "wheel",
+      "domain": [0, 80, 100, 180, 260, 280, 360],
+      "range": [
+        [126, 178, 255, 1],
+        [126, 178, 255, 0],
+        [255, 148, 51, 0],
+        [255, 148, 51, 1],
+        [255, 148, 51, 0],
+        [126, 178, 255, 0],
+        [126, 178, 255, 1]
+      ]
     }
-  },
-  "layers": [
-    {
-      "id": "aspect",
-      "type": "hillshade",
-      "source": "terrain",
-      "layout": {
-        "visibility": "none"
-      },
-      "metadata": {
-        "layerscape:label": "Aspect",
-        "layerscape:author": "Layerscape",
-        "layerscape:compute": [
-          "// One gradient, read twice: the direction the slope faces, and how steep it is so",
-          "// flat ground (where facing means nothing) fades out.",
-          "vec2 g = gradient(u_distance);",
-          "value = aspectDeg(g);",
-          "alpha = inRange(slopeDeg(g), u_minSlope, 90.0, 1.0);"
-        ],
-        "layerscape:uniforms": [
-          {
-            "name": "u_distance",
-            "label": "Slope distance (m)",
-            "type": "float",
-            "value": 10,
-            "min": 2,
-            "max": 50,
-            "step": 1
-          },
-          {
-            "name": "u_minSlope",
-            "label": "Flat-ground cutoff (°)",
-            "type": "float",
-            "value": 2
-          }
-        ],
-        "layerscape:presentation": {
-          "kind": "scale",
-          "opacity": 0.5,
-          "scale": {
-            "scaleType": "continuous",
-            "title": "Aspect (facing)",
-            "display": "wheel",
-            "domain": [0, 80, 100, 180, 260, 280, 360],
-            "range": [
-              [126, 178, 255, 1],
-              [126, 178, 255, 0],
-              [255, 148, 51, 0],
-              [255, 148, 51, 1],
-              [255, 148, 51, 0],
-              [126, 178, 255, 0],
-              [126, 178, 255, 1]
-            ]
-          }
-        }
-      }
-    }
-  ]
+  }
 }

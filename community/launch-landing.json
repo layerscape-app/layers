@@ -1,54 +1,25 @@
 {
-  "version": 8,
-  "name": "Launch and landing sites",
-  "metadata": { "layerscape:insertBefore": "labels" },
-  "sources": {
-    "terrain": {
-      "type": "raster-dem",
-      "encoding": "terrarium",
-      "tiles": ["https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"],
-      "tileSize": 512,
-      "minzoom": 0,
-      "maxzoom": 15,
-      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
-    }
-  },
-  "layers": [
-    {
-      "id": "launch-landing",
-      "type": "hillshade",
-      "source": "terrain",
-      "layout": { "visibility": "none" },
-      "metadata": {
-        "layerscape:label": "Launch & landing",
-        "layerscape:compute": [
-          "// Paragliding sites by terrain alone. Landing (1): flat enough over 100 m.",
-          "// Launch (2): 20-35° slopes facing into the wind, with the ground falling away",
-          "// below them.",
-          "vec2 g = gradient(20.0);",
-          "float s = slopeDeg(g);",
-          "vec2 down = dot(g, g) > 1e-12 ? -normalize(g) : vec2(0.0, -1.0);",
-          "float launch = inRange(s, 20.0, 35.0, 4.0) * facing(aspectDeg(g), u_windFrom, 45.0)",
-          "             * smoothstep(20.0, 60.0, elev(vec2(0.0)) - elev(down * 60.0));",
-          "float landing = (1.0 - smoothstep(4.0, 7.0, s)) * (1.0 - smoothstep(4.0, 7.0, slopeDeg(100.0)));",
-          "value = launch > landing ? 2.0 : 1.0;",
-          "alpha = max(launch, landing);"
-        ],
-        "layerscape:uniforms": [
-          { "name": "u_windFrom", "label": "Wind from (°)", "type": "float", "value": 270, "min": 0, "max": 360, "step": 5 }
-        ],
-        "layerscape:presentation": {
-          "kind": "scale",
-          "scale": {
-            "scaleType": "threshold",
-            "title": "Site",
-            "tickFormat": ".0f",
-            "domain": [1, 2],
-            "range": [[0, 158, 115], [230, 159, 0]]
-          },
-          "footnote": "1 landing (green) · 2 launch (orange). No obstacles, wind or airspace data."
-        }
-      }
-    }
-  ]
+  "$schema": "https://layerscape.app/schema.json",
+  "version": 1,
+  "id": "launch-landing",
+  "label": "Launch & landing",
+  "compute": [
+    "// Paragliding sites by terrain alone. Landing (1): flat enough over 100 m.",
+    "// Launch (2): 20-35° slopes facing into the wind, with the ground falling away",
+    "// below them.",
+    "vec2 g = gradient(20.0);",
+    "float s = slopeDeg(g);",
+    "vec2 down = dot(g, g) > 1e-12 ? -normalize(g) : vec2(0.0, -1.0);",
+    "float launch = inRange(s, 20.0, 35.0, 4.0) * facing(aspectDeg(g), u_windFrom, 45.0)",
+    "             * smoothstep(20.0, 60.0, elev(vec2(0.0)) - elev(down * 60.0));",
+    "float landing = (1.0 - smoothstep(4.0, 7.0, s)) * (1.0 - smoothstep(4.0, 7.0, slopeDeg(100.0)));",
+    "value = launch > landing ? 2.0 : 1.0;",
+    "alpha = max(launch, landing);"
+  ],
+  "uniforms": [{ "name": "u_windFrom", "label": "Wind from (°)", "type": "float", "value": 270, "min": 0, "max": 360, "step": 5 }],
+  "presentation": {
+    "kind": "scale",
+    "scale": { "scaleType": "threshold", "title": "Site", "tickFormat": ".0f", "domain": [1, 2], "range": [[0, 158, 115], [230, 159, 0]] },
+    "footnote": "1 landing (green) · 2 launch (orange). No obstacles, wind or airspace data."
+  }
 }

@@ -9,7 +9,7 @@
  *   _headers        CORS for the app, and short cache lifetimes for what changes on publish.
  *
  * The checks here are the ones that need nothing but the files: the catalog's own rules
- * (one layer per document, filed under its slug, with a record). The loader's checks on the
+ * (a layer document, filed under its slug, with a record). The loader's checks on the
  * contents (schema, GLSL lint) run in the publish service on everything it commits, and in
  * the app repo for everything else: `npm run check:catalog -- ../layers`.
  */
@@ -46,12 +46,12 @@ for (const tier of TIERS) {
     const doc = read(at);
     const meta = read(`meta/${file}`);
     if (!doc || !meta) continue;
-    if (doc.version !== 8 || !Array.isArray(doc.layers) || doc.layers.length !== 1) {
-      problems.push(`${at}: expected a MapLibre style with exactly one layer`);
+    if (doc.version !== 1 || typeof doc.id !== "string") {
+      problems.push(`${at}: expected a Layerscape layer, { "version": 1, "id": … }`);
       continue;
     }
-    if (doc.layers[0].id !== slug) problems.push(`${at}: its layer id is "${doc.layers[0].id}", not its slug`);
-    if (!doc.layers[0].metadata?.["layerscape:compute"]) problems.push(`${at}: its layer has no "layerscape:compute"`);
+    if (doc.id !== slug) problems.push(`${at}: its id is "${doc.id}", not its slug`);
+    if (!doc.compute) problems.push(`${at}: it has no "compute"`);
     if (typeof meta.title !== "string" || typeof meta.createdAt !== "string") {
       problems.push(`meta/${file}: needs a "title" and a "createdAt"`);
     }

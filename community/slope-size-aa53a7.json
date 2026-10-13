@@ -1,173 +1,79 @@
 {
-  "version": 8,
-  "name": "Slope size for skier-triggered avalanches",
-  "metadata": {
-    "layerscape:insertBefore": "labels"
+  "$schema": "https://layerscape.app/schema.json",
+  "version": 1,
+  "id": "slope-size-aa53a7",
+  "label": "Slope size",
+  "capabilities": { "terrain": { "radiusM": 1000, "resolutionM": 10 } },
+  "compute": [
+    "// Slope after Skitourenguru's Relevant Slope Area: bounded by the next terrain fold",
+    "// (ridge, gully bottom, slope edge, toe; fold = angle between neighbouring slope normals)",
+    "// or where the terrain flattens below the minimum angle. Follow the fall line up and down",
+    "// from the skier and report the height between the top and the bottom of that slope.",
+    "float h = 5.0;",
+    "float stepM = 10.0;",
+    "float tanMin = tan(radians(u_minSlope));",
+    "float cosFold = cos(radians(u_fold));",
+    "// 1. Find the slope: right here, or within u_below metres uphill (skier below the toe).",
+    "vec2 p = vec2(0.0);",
+    "vec2 g = gradient(10.0);",
+    "float below = 0.0;",
+    "bool found = length(g) >= tanMin;",
+    "for (int i = 0; i < 20; i++) {",
+    "  if (found || below + 2.5 > u_below || length(g) < 0.0001) break;",
+    "  p += normalize(g) * 5.0;",
+    "  below += 5.0;",
+    "  g = vec2(elev(p + vec2(h, 0.0)) - elev(p - vec2(h, 0.0)), elev(p + vec2(0.0, h)) - elev(p - vec2(0.0, h))) / (2.0 * h);",
+    "  found = length(g) >= tanMin;",
+    "}",
+    "float z0 = elev(p);",
+    "float top = z0;",
+    "float bottom = z0;",
+    "if (found) {",
+    "  // 2. Up the fall line until it flattens or crosses a fold.",
+    "  vec2 q = p;",
+    "  vec2 gq = g;",
+    "  vec3 nq = normalize(vec3(-gq, 1.0));",
+    "  for (int i = 0; i < 80; i++) {",
+    "    vec2 qn = q + normalize(gq) * stepM;",
+    "    top = max(top, elev(qn));",
+    "    vec2 gn = vec2(elev(qn + vec2(h, 0.0)) - elev(qn - vec2(h, 0.0)), elev(qn + vec2(0.0, h)) - elev(qn - vec2(0.0, h))) / (2.0 * h);",
+    "    vec3 nn = normalize(vec3(-gn, 1.0));",
+    "    if (length(gn) < tanMin || dot(nn, nq) < cosFold) break;",
+    "    q = qn; gq = gn; nq = nn;",
+    "  }",
+    "  // 3. Down the fall line from the same start until it flattens or crosses a fold.",
+    "  q = p;",
+    "  gq = g;",
+    "  nq = normalize(vec3(-gq, 1.0));",
+    "  for (int i = 0; i < 80; i++) {",
+    "    vec2 qn = q - normalize(gq) * stepM;",
+    "    bottom = min(bottom, elev(qn));",
+    "    vec2 gn = vec2(elev(qn + vec2(h, 0.0)) - elev(qn - vec2(h, 0.0)), elev(qn + vec2(0.0, h)) - elev(qn - vec2(0.0, h))) / (2.0 * h);",
+    "    vec3 nn = normalize(vec3(-gn, 1.0));",
+    "    if (length(gn) < tanMin || dot(nn, nq) < cosFold) break;",
+    "    q = qn; gq = gn; nq = nn;",
+    "  }",
+    "}",
+    "value = top - bottom;",
+    "// Full colour inside the slope, paler the further below its toe.",
+    "alpha = found ? mix(1.0, 0.4, below / max(u_below, 5.0)) : 0.0;"
+  ],
+  "uniforms": [
+    { "name": "u_minSlope", "label": "Min slope angle (°)", "type": "float", "value": 30, "min": 25, "max": 40, "step": 1 },
+    { "name": "u_fold", "label": "Fold angle (°)", "type": "float", "value": 25, "min": 10, "max": 60, "step": 5 },
+    { "name": "u_below", "label": "Reach below toe (m)", "type": "float", "value": 30, "min": 0, "max": 100, "step": 5 }
+  ],
+  "presentation": {
+    "kind": "scale",
+    "scale": {
+      "scaleType": "threshold",
+      "title": "Slope size (height)",
+      "tickFormat": ".0f",
+      "unit": " m",
+      "domain": [0, 60, 100, 200, 300],
+      "range": [[218, 195, 255, 0.35], [180, 130, 240, 0.55], [150, 95, 220, 0.65], [120, 60, 200, 0.75], [60, 15, 110, 0.9]]
+    },
+    "footnote": "Height from bottom to top of the slope, bounded by terrain folds or flattening (after Skitourenguru). Bands: <60, 60–100, 100–200, 200–300, >300 m. Paler colour: below the slope's toe. No forest data."
   },
-  "sources": {
-    "terrain": {
-      "type": "raster-dem",
-      "encoding": "terrarium",
-      "tiles": [
-        "https://data.layerscape.app/terrain/{z}/{x}/{y}.webp"
-      ],
-      "tileSize": 512,
-      "minzoom": 0,
-      "maxzoom": 15,
-      "attribution": "<a href=\"https://mapterhorn.com\">Mapterhorn</a>"
-    }
-  },
-  "layers": [
-    {
-      "id": "slope-size-aa53a7",
-      "type": "hillshade",
-      "source": "terrain",
-      "minzoom": 7,
-      "layout": {
-        "visibility": "none"
-      },
-      "metadata": {
-        "layerscape:label": "Slope size",
-        "layerscape:capabilities": {
-          "terrain": {
-            "radiusM": 1000,
-            "resolutionM": 10
-          }
-        },
-        "layerscape:compute": [
-          "// Slope after Skitourenguru's Relevant Slope Area: bounded by the next terrain fold",
-          "// (ridge, gully bottom, slope edge, toe; fold = angle between neighbouring slope normals)",
-          "// or where the terrain flattens below the minimum angle. Follow the fall line up and down",
-          "// from the skier and report the height between the top and the bottom of that slope.",
-          "float h = 5.0;",
-          "float stepM = 10.0;",
-          "float tanMin = tan(radians(u_minSlope));",
-          "float cosFold = cos(radians(u_fold));",
-          "// 1. Find the slope: right here, or within u_below metres uphill (skier below the toe).",
-          "vec2 p = vec2(0.0);",
-          "vec2 g = gradient(10.0);",
-          "float below = 0.0;",
-          "bool found = length(g) >= tanMin;",
-          "for (int i = 0; i < 20; i++) {",
-          "  if (found || below + 2.5 > u_below || length(g) < 0.0001) break;",
-          "  p += normalize(g) * 5.0;",
-          "  below += 5.0;",
-          "  g = vec2(elev(p + vec2(h, 0.0)) - elev(p - vec2(h, 0.0)), elev(p + vec2(0.0, h)) - elev(p - vec2(0.0, h))) / (2.0 * h);",
-          "  found = length(g) >= tanMin;",
-          "}",
-          "float z0 = elev(p);",
-          "float top = z0;",
-          "float bottom = z0;",
-          "if (found) {",
-          "  // 2. Up the fall line until it flattens or crosses a fold.",
-          "  vec2 q = p;",
-          "  vec2 gq = g;",
-          "  vec3 nq = normalize(vec3(-gq, 1.0));",
-          "  for (int i = 0; i < 80; i++) {",
-          "    vec2 qn = q + normalize(gq) * stepM;",
-          "    top = max(top, elev(qn));",
-          "    vec2 gn = vec2(elev(qn + vec2(h, 0.0)) - elev(qn - vec2(h, 0.0)), elev(qn + vec2(0.0, h)) - elev(qn - vec2(0.0, h))) / (2.0 * h);",
-          "    vec3 nn = normalize(vec3(-gn, 1.0));",
-          "    if (length(gn) < tanMin || dot(nn, nq) < cosFold) break;",
-          "    q = qn; gq = gn; nq = nn;",
-          "  }",
-          "  // 3. Down the fall line from the same start until it flattens or crosses a fold.",
-          "  q = p;",
-          "  gq = g;",
-          "  nq = normalize(vec3(-gq, 1.0));",
-          "  for (int i = 0; i < 80; i++) {",
-          "    vec2 qn = q - normalize(gq) * stepM;",
-          "    bottom = min(bottom, elev(qn));",
-          "    vec2 gn = vec2(elev(qn + vec2(h, 0.0)) - elev(qn - vec2(h, 0.0)), elev(qn + vec2(0.0, h)) - elev(qn - vec2(0.0, h))) / (2.0 * h);",
-          "    vec3 nn = normalize(vec3(-gn, 1.0));",
-          "    if (length(gn) < tanMin || dot(nn, nq) < cosFold) break;",
-          "    q = qn; gq = gn; nq = nn;",
-          "  }",
-          "}",
-          "value = top - bottom;",
-          "// Full colour inside the slope, paler the further below its toe.",
-          "alpha = found ? mix(1.0, 0.4, below / max(u_below, 5.0)) : 0.0;"
-        ],
-        "layerscape:uniforms": [
-          {
-            "name": "u_minSlope",
-            "label": "Min slope angle (°)",
-            "type": "float",
-            "value": 30,
-            "min": 25,
-            "max": 40,
-            "step": 1
-          },
-          {
-            "name": "u_fold",
-            "label": "Fold angle (°)",
-            "type": "float",
-            "value": 25,
-            "min": 10,
-            "max": 60,
-            "step": 5
-          },
-          {
-            "name": "u_below",
-            "label": "Reach below toe (m)",
-            "type": "float",
-            "value": 30,
-            "min": 0,
-            "max": 100,
-            "step": 5
-          }
-        ],
-        "layerscape:presentation": {
-          "kind": "scale",
-          "scale": {
-            "scaleType": "threshold",
-            "title": "Slope size (height)",
-            "tickFormat": ".0f",
-            "unit": " m",
-            "domain": [
-              0,
-              60,
-              100,
-              200,
-              300
-            ],
-            "range": [
-              [
-                218,
-                195,
-                255,
-                0.35
-              ],
-              [
-                180,
-                130,
-                240,
-                0.55
-              ],
-              [
-                150,
-                95,
-                220,
-                0.65
-              ],
-              [
-                120,
-                60,
-                200,
-                0.75
-              ],
-              [
-                60,
-                15,
-                110,
-                0.9
-              ]
-            ]
-          },
-          "footnote": "Height from bottom to top of the slope, bounded by terrain folds or flattening (after Skitourenguru). Bands: <60, 60–100, 100–200, 200–300, >300 m. Paler colour: below the slope's toe. No forest data."
-        },
-        "layerscape:author": "Patrick"
-      }
-    }
-  ]
+  "author": "Patrick"
 }

@@ -1,8 +1,8 @@
 # Layerscape layers
 
-Every published [Layerscape](https://layerscape.app) layer. A layer is a MapLibre style
-document that computes one number per pixel from terrain, in GLSL, and colours it (see the
-authoring guide at <https://layerscape.app/llms.txt>). This repo is the one place a layer is
+Every published [Layerscape](https://layerscape.app) layer. A layer is a JSON document that
+computes one number per pixel from terrain, in GLSL, and colours it (see the authoring guide
+at <https://layerscape.app/llms.txt> and the schema at <https://layerscape.app/schema.json>). This repo is the one place a layer is
 shared from: a Layerscape link names a layer by its slug, and the app fetches it from here.
 Git history is each layer's version history.
 
@@ -17,13 +17,13 @@ community/<slug>.json   layers published from the app, and the authoring guide's
 meta/<slug>.json        the catalog's record of each layer
 ```
 
-A layer's slug is also its layer id, so `featured/slope.json` holds a layer whose id is
-`slope`. Layers published from the app get the label in kebab case plus a short hash of the
-document, e.g. `skiable-couloirs-3fa9c1`; the guide's examples keep their plain ids
-(`couloir`, `wind-shelter`, …) because the guide links them by path.
+A layer's slug is also its id, so `featured/slope.json` holds a layer whose id is `slope`.
+Layers published from the app get the label in kebab case plus a short hash of the document,
+e.g. `skiable-couloirs-3fa9c1`; the guide's examples keep their plain ids (`couloir`,
+`wind-shelter`, …) because the guide links them by path.
 
-The document holds only what the app renders, plus `layerscape:author` (shown under the
-legend). Everything the catalog knows about a layer lives in its record:
+The document holds only what the app renders, plus `author` (shown under the legend).
+Everything the catalog knows about a layer lives in its record:
 
 ```json
 {
